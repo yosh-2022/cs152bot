@@ -12,7 +12,8 @@ class State(Enum):
     #USER_JUDGEMENT = auto()  
     #EVENT_IDENTIFIED = auto()
     LAST_USER_INPUT = auto() 
-    LAST_USER_INPUT_MISLEADING = auto()   
+    LAST_USER_INPUT_MISLEADING = auto()
+    MESSAGE_BLOCKED = auto()   
 
 
 class Report:
@@ -159,9 +160,11 @@ class Report:
             # because you can't edit other people's messages, the bot will delete the offensive message instead
             await self.message.delete()
             reply += "In the meantime, we've hid the reported message from your view.\n"
-            # I'll leave the buttons for this to you
-            reply += "Would you like to mute or block the offending user?"
-            self.state = State.REPORT_COMPLETE
+            reply += "Would you like to mute or block the offending user?\n"
+            reply += "`1`: Mute\n"
+            reply += "`2`: Block\n"
+            reply += "`3`: Neither"
+            self.state = State.MESSAGE_BLOCKED
             return [reply]
         if self.state == State.LAST_USER_INPUT_MISLEADING:
             #here message is the user numerical input corresponding to the type of spam, harassment, disturbing content, or misleading info
@@ -169,10 +172,25 @@ class Report:
             # because you can't edit other people's messages, the bot will delete the offensive message instead
             await self.message.delete()
             reply += "In the meantime, we've hid the reported message from your view.\n"
-            # I'll leave the buttons for this to you
-            reply += "Would you like to mute or block the offending user?"
-            self.state = State.REPORT_COMPLETE
+            reply += "Would you like to mute or block the offending user?\n"
+            reply += "`1`: Mute\n"
+            reply += "`2`: Block\n"
+            reply += "`3`: Neither"
+            self.state = State.MESSAGE_BLOCKED
             return [reply]
+        if self.state == State.MESSAGE_BLOCKED:
+            reply = "I'm sorry, but I don't recognize that input. Please enter a number from 1 to 3."
+            if message.content == '1':
+                reply = "The user has been muted."
+                self.state = State.REPORT_COMPLETE
+            elif message.content == '2':
+                reply = "The user has been blocked."
+                self.state = State.REPORT_COMPLETE
+            elif message.content == '3':
+                reply = "The user has not been muted or blocked."
+                self.state = State.REPORT_COMPLETE
+            return [reply]
+        
         return []
 
     def report_complete(self):
